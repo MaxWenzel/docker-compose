@@ -1,0 +1,16 @@
+version: '3.8'
+
+services:
+  postgres:
+    image: "postgres:12.3"
+    ports:
+        - "5432:5432"
+    volumes:
+        - postgres_db:/var/lib/postgresql/data 
+    restart: always
+    environment:
+      POSTGRES_PASSWORD: topSecret
+
+volumes:
+    postgres_db:
+        external: true
