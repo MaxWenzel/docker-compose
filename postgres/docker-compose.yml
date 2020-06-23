@@ -10,6 +10,7 @@ services:
     restart: always
     environment:
       POSTGRES_PASSWORD: topSecret
+      POSTGRES_DB: quarkus
 
 volumes:
     postgres_db:
