@@ -56,17 +56,17 @@ http://localhost:18081/
 
 ## Kafka
 
-### Prerequisites
 
-Adapt the hosts file (C:\Windows\System32\drivers\etc):
+Call Url:
 
-```
-10.82.6.17 kafka1.test.local
-10.82.6.17 kafka2.test.local
-10.82.6.17 kafka3.test.local
+```bash
+http://localhost:8001/#/
 ```
 
-
+```bash
+# Get a list of topics
+curl "http://localhost:8082/topics"
+```
 
 Read:
 
