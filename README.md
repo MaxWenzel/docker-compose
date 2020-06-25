@@ -3,6 +3,18 @@
 
 ```bash
 docker-compose up 
+
+# stop all
+docker stop $(docker ps -aq)
+
+# remove all
+docker rm $(docker ps -aq)
+
+# remove all images
+docker rmi $(docker images -q)
+
+# 
+sudo docker update --restart=no <container_id>
 ```
 
 ## Elastic
@@ -58,5 +70,7 @@ Adapt the hosts file (C:\Windows\System32\drivers\etc):
 
 Read:
 
+* https://www.confluent.io/blog/kafka-listeners-explained/
+* Kafka-Rest: https://github.com/confluentinc/kafka-rest
 * http://www.smartjava.org/content/setting-up-kafka-cluster-docker-copy/
 * https://github.com/wurstmeister/kafka-docker

@@ -1,50 +1,108 @@
-version: "3.8"
+version: "3"
+
 services:
   zookeeper:
+    container_name: zoo
     image: wurstmeister/zookeeper
     ports:
       - "2181:2181"
-  kafka-1:
-    image: wurstmeister/kafka
-    ports:
-      - "9095:9092"
-    environment:
-      KAFKA_ADVERTISED_HOST_NAME: kafka1.test.local
-      KAFKA_ADVERTISED_PORT: 9095
-      KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
-      KAFKA_LOG_DIRS: /kafka/logs
-      KAFKA_BROKER_ID: 500
-      KAFKA_offsets_topic_replication_factor: 3
-    volumes:
-      - //var/run/docker.sock:/var/run/docker.sock
-      - /c/docker-data/kafka/500:/kafka
 
-  kafka-2:
+  kafka1:
+    container_name: kafka1
     image: wurstmeister/kafka
     ports:
-      - "9096:9092"
+      - "9092:9092"
     environment:
-      KAFKA_ADVERTISED_HOST_NAME: kafka2.test.local
-      KAFKA_ADVERTISED_PORT: 9096
+      # Had to call the internal docker listener PLAINTEXT so that schema registry works!!
+      KAFKA_LISTENERS: PLAINTEXT://kafka1:29092, LISTENER_HOST://0.0.0.0:9092
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka1:29092, LISTENER_HOST://localhost:9092
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT,LISTENER_HOST:PLAINTEXT
+      KAFKA_INTER_BROKER_LISTENER_NAME: PLAINTEXT
       KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
-      KAFKA_LOG_DIRS: /kafka/logs
-      KAFKA_BROKER_ID: 501
-      KAFKA_offsets_topic_replication_factor: 3
+      KAFKA_LOG_DIRS: /kafka1/logs
+      KAFKA_BROKER_ID: 600
+      KAFKA_offsets_topic_replication_factor: 1
     volumes:
-      - //var/run/docker.sock:/var/run/docker.sock
-      - /c/docker-data/kafka/501:/kafka
+    - //var/run/docker.sock:/var/run/docker.sock
+    - /c/docker-data/kafka/600:/kafka    
 
-  kafka-3:
+  kafka-schema-registry:
+    image: confluentinc/cp-schema-registry
+    depends_on:
+      - kafka1
+      - zookeeper
+    environment:
+          SCHEMA_REGISTRY_HOST_NAME: kafka-schema-registry
+          SCHEMA_REGISTRY_KAFKASTORE_CONNECTION_URL: zookeeper:2181
+          SCHEMA_REGISTRY_LISTENERS: http://0.0.0.0:8081
+    ports:
+      - "8081:8081"
+
+  schema-registry-ui:
+    image: landoop/schema-registry-ui
+    container_name: kafka-schema-registry-ui
+    hostname: kafka-schema-registry-ui
+    ports:
+      - "8001:8000"
+      # http://localhost:8001/#/
+    environment:
+      SCHEMAREGISTRY_URL: http://kafka-schema-registry:8081/
+      PROXY: "true"
+    depends_on:
+      - kafka-schema-registry
+
+version: "3"
+
+services:
+  zookeeper:
+    container_name: zoo
+    image: wurstmeister/zookeeper
+    ports:
+      - "2181:2181"
+
+  kafka1:
+    container_name: kafka1
     image: wurstmeister/kafka
     ports:
-      - "9097:9092"
+      - "9092:9092"
     environment:
-      KAFKA_ADVERTISED_HOST_NAME: kafka1.test.local
-      KAFKA_ADVERTISED_PORT: 9097
+      # Had to call the internal docker listener PLAINTEXT so that schema registry works!!
+      #KAFKA_ADVERTISED_HOST_NAME: kafka1
+      #KAFKA_ADVERTISED_PORT: 9092
+      KAFKA_LISTENERS: PLAINTEXT://kafka1:29092, LISTENER_HOST://0.0.0.0:9092
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka1:29092, LISTENER_HOST://localhost:9092
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT,LISTENER_HOST:PLAINTEXT
+      KAFKA_INTER_BROKER_LISTENER_NAME: PLAINTEXT
       KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
-      KAFKA_LOG_DIRS: /kafka/logs
-      KAFKA_BROKER_ID: 502
-      KAFKA_offsets_topic_replication_factor: 3
+      KAFKA_LOG_DIRS: /kafka1/logs
+      KAFKA_BROKER_ID: 600
+      KAFKA_offsets_topic_replication_factor: 1
     volumes:
-      - //var/run/docker.sock:/var/run/docker.sock
-      - /c/docker-data/kafka/502:/kafka
+    - //var/run/docker.sock:/var/run/docker.sock
+    - /c/docker-data/kafka/600:/kafka    
+
+  kafka-schema-registry:
+    image: confluentinc/cp-schema-registry
+    depends_on:
+      - kafka1
+      - zookeeper
+    environment:
+          SCHEMA_REGISTRY_HOST_NAME: kafka-schema-registry
+          SCHEMA_REGISTRY_KAFKASTORE_CONNECTION_URL: zookeeper:2181
+          SCHEMA_REGISTRY_LISTENERS: http://0.0.0.0:8081
+    ports:
+      - "8081:8081"
+
+  schema-registry-ui:
+    image: landoop/schema-registry-ui
+    container_name: kafka-schema-registry-ui
+    hostname: kafka-schema-registry-ui
+    ports:
+      - "8001:8000"
+      # http://localhost:8001/#/
+    environment:
+      SCHEMAREGISTRY_URL: http://kafka-schema-registry:8081/
+      PROXY: "true"
+    depends_on:
+      - kafka-schema-registry
+
