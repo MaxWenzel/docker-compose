@@ -6,12 +6,19 @@ services:
     ports:
         - "5432:5432"
     volumes:
+        - ./init/docker_postgres_init.sql:/docker-entrypoint-initdb.d/docker_postgres_init.sql
         - postgres_db:/var/lib/postgresql/data 
     restart: always
     environment:
       POSTGRES_PASSWORD: topSecret
       POSTGRES_DB: quarkus
-
+    networks:
+      postgresnet:
+        aliases: 
+          - postgresdb
 volumes:
     postgres_db:
         external: true
+
+networks:
+    postgresnet:        
